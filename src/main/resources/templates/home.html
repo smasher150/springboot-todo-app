@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Todo List Manager</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/style.css}" />
+</head>
+<body>
+
+<h2>Todo List Manager</h2>
+
+<!-- Add Task Form -->
+<form action="/addTask" method="post">
+    <input type="text" name="task" placeholder="Enter task description" required />
+    <input type="date" name="dueDate" th:min="${T(java.time.LocalDate).now()}" />
+    <button type="submit">Add Task</button>
+</form>
+
+<!-- display a message if provided -->
+<div th:if="${message}" 
+     th:class="|message ${#strings.contains(message, 'Error:') ? 'message-error' : (#strings.contains(message, 'deleted') ? 'message-success' : 'message-info')}|"
+     th:text="${message}"></div>
+
+<!-- list of tasks -->
+<div th:if="${tasks.empty}">
+    <p class="no-tasks">No tasks yet. Add your first task above!</p>
+</div>
+
+<div th:each="task : ${tasks}">
+    <div class="task-item">
+        <div class="task-info">
+            <span th:class="${task.completed} ? 'completed' : ''" th:text="${task.description}"></span>
+            <div class="due-date">
+                <span th:if="${task.dueDate}"
+                      th:class="${task.dueDate.isBefore(T(java.time.LocalDate).now()) and !task.completed} ? 'overdue' : ''"
+                      th:text="'Due: ' + ${task.dueDate}"></span>
+            </div>
+        </div>
+        <div class="task-actions">
+            <form th:action="@{/toggleTask}" method="post" class="inline-form">
+                <input type="hidden" name="id" th:value="${task.id}" />
+                <button type="submit" class="btn btn-complete" th:text="${task.completed} ? 'Undo' : 'Complete'"></button>
+            </form>
+            <button class="btn btn-edit" th:onclick="|toggleEdit(${task.id})|">Edit</button>
+            <form th:action="@{/deleteTask}" method="post" class="inline-form">
+                <input type="hidden" name="id" th:value="${task.id}" />
+                <button type="submit" class="btn btn-delete">Delete</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Form (hidden by default) -->
+    <div th:id="'edit-' + ${task.id}" class="edit-form">
+        <form th:action="@{/editTask}" method="post">
+            <input type="hidden" name="id" th:value="${task.id}" />
+            <input type="text" name="description" th:value="${task.description}" required class="description-input" />
+            <input type="date" name="dueDate" th:value="${task.dueDate}" th:min="${T(java.time.LocalDate).now()}" />
+            <button type="submit" class="btn btn-save">Save</button>
+            <button type="button" class="btn btn-cancel" th:onclick="|toggleEdit(${task.id})|">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleEdit(taskId) {
+    const editForm = document.getElementById('edit-' + taskId);
+    editForm.style.display = editForm.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+
+</body>
+</html>

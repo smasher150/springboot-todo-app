@@ -1,0 +1,150 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f9f9f9;
+}
+
+h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+input[type="text"], input[type="date"] {
+    padding: 8px;
+    margin-right: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+input[type="text"] {
+    width: 300px;
+}
+
+input[type="date"] {
+    width: 150px;
+}
+
+button {
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.completed {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    margin: 4px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.task-info {
+    flex-grow: 1;
+}
+
+.task-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.edit-form {
+    display: none;
+    margin-top: 8px;
+    padding: 8px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.btn {
+    padding: 4px 8px;
+    margin: 2px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-complete { background-color: #28a745; color: white; }
+.btn-edit { background-color: #ffc107; color: black; }
+.btn-delete { background-color: #dc3545; color: white; }
+.btn-save { background-color: #007bff; color: white; }
+.btn-cancel { background-color: #6c757d; color: white; }
+
+.due-date {
+    font-size: 12px;
+    color: #666;
+}
+
+.overdue {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.message {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.message-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.message-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.message-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.no-tasks {
+    font-size: 16px;
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.description-input {
+    width: 300px;
+    margin-right: 8px;
+}
+
+ul {
+    list-style-type: disc;
+    padding-left: 20px;
+}
+
+li {
+    margin: 4px 0;
+}
