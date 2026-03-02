@@ -37,6 +37,13 @@ button {
     border-radius: 4px;
 }
 
+/* ensure all action buttons are equal width */
+.btn {
+    display: inline-block;
+    min-width: 70px;
+    text-align: center;
+}
+
 button:hover {
     background-color: #0056b3;
 }
