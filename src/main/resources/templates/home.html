@@ -8,22 +8,11 @@
 
 <h2>Todo List Manager</h2>
 
-<!-- task counts -->
-<div class="task-counts">
-    <span>Total tasks: <span th:text="${totalCount}">0</span></span>
-    <span>Completed: <span th:text="${completedCount}">0</span></span>
-</div>
-
 <!-- Add Task Form -->
 <form action="/addTask" method="post">
     <input type="text" name="task" placeholder="Enter task description" required />
     <input type="date" name="dueDate" th:min="${T(java.time.LocalDate).now()}" />
     <button type="submit">Add Task</button>
-</form>
-
-<!-- clear completed tasks -->
-<form action="/clearCompleted" method="post" style="margin-top:10px;">
-    <button type="submit">Clear Completed</button>
 </form>
 
 <!-- display a message if provided -->

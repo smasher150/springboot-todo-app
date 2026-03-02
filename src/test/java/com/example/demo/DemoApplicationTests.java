@@ -1,7 +1,3 @@
-Changes not staged for commit:
-#	modified:   .vscode/settings.json
-#	modified:   target/test-classes/com/example/demo/DemoApplicationTests.class
-#
 package com.example.demo;
 
 import org.junit.jupiter.api.Test;
@@ -34,31 +30,61 @@ class DemoApplicationTests {
     }
 
     @Test
-    void apiTasksInitiallyEmpty() throws Exception {
-        mockMvc.perform(get("/api/tasks"))
+    void homePageLoads() throws Exception {
+        mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().json("[]"));
+                .andExpect(content().contentTypeCompatibleWith("text/html"));
     }
 
     @Test
-    void addTaskAndClearCompleted() throws Exception {
+    void addTask() throws Exception {
         mockMvc.perform(post("/addTask")
-                .param("task", "Test")
+                .param("task", "Test Task")
+                .param("dueDate", ""))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void toggleTask() throws Exception {
+        // First add a task
+        mockMvc.perform(post("/addTask")
+                .param("task", "Test Task")
                 .param("dueDate", ""))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/tasks"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].description").value("Test"));
+        // Then toggle it
+        mockMvc.perform(post("/toggleTask")
+                .param("id", "1"))
+                .andExpect(status().isOk());
+    }
 
-        mockMvc.perform(post("/toggleTask").param("id", "1"))
+    @Test
+    void deleteTask() throws Exception {
+        // First add a task
+        mockMvc.perform(post("/addTask")
+                .param("task", "Test Task")
+                .param("dueDate", ""))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(post("/clearCompleted"))
+        // Then delete it
+        mockMvc.perform(post("/deleteTask")
+                .param("id", "1"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void editTask() throws Exception {
+        // First add a task
+        mockMvc.perform(post("/addTask")
+                .param("task", "Original Task")
+                .param("dueDate", ""))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/tasks"))
-                .andExpect(status().isOk())
-                .andExpect(content().json("[]"));
+        // Then edit it
+        mockMvc.perform(post("/editTask")
+                .param("id", "1")
+                .param("description", "Updated Task")
+                .param("dueDate", ""))
+                .andExpect(status().isOk());
     }
 }

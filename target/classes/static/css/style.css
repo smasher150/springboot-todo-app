@@ -35,6 +35,11 @@ button {
     border: none;
     cursor: pointer;
     border-radius: 4px;
+    display: inline-block;
+    width: 80px;
+    height: 40px;
+    text-align: center;
+    box-sizing: border-box;
 }
 
 button:hover {
@@ -80,6 +85,11 @@ button:hover {
     border-radius: 3px;
     cursor: pointer;
     font-size: 12px;
+    display: inline-block;
+    width: 80px;
+    height: 36px;
+    text-align: center;
+    box-sizing: border-box;
 }
 
 .btn-complete { background-color: #28a745; color: white; }
@@ -138,13 +148,4 @@ button:hover {
 .description-input {
     width: 300px;
     margin-right: 8px;
-}
-
-ul {
-    list-style-type: disc;
-    padding-left: 20px;
-}
-
-li {
-    margin: 4px 0;
 }

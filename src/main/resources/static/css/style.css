@@ -35,13 +35,11 @@ button {
     border: none;
     cursor: pointer;
     border-radius: 4px;
-}
-
-/* ensure all action buttons are equal width */
-.btn {
     display: inline-block;
-    min-width: 70px;
+    width: 80px;
+    height: 40px;
     text-align: center;
+    box-sizing: border-box;
 }
 
 button:hover {
@@ -87,6 +85,11 @@ button:hover {
     border-radius: 3px;
     cursor: pointer;
     font-size: 12px;
+    display: inline-block;
+    width: 80px;
+    height: 36px;
+    text-align: center;
+    box-sizing: border-box;
 }
 
 .btn-complete { background-color: #28a745; color: white; }
@@ -138,15 +141,6 @@ button:hover {
     padding: 20px;
 }
 
-.task-counts {
-    margin-bottom: 15px;
-    font-size: 14px;
-    color: #333;
-}
-.task-counts span {
-    margin-right: 10px;
-}
-
 .inline-form {
     display: inline;
 }
@@ -154,13 +148,4 @@ button:hover {
 .description-input {
     width: 300px;
     margin-right: 8px;
-}
-
-ul {
-    list-style-type: disc;
-    padding-left: 20px;
-}
-
-li {
-    margin: 4px 0;
 }
