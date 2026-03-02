@@ -1,3 +1,7 @@
+Changes not staged for commit:
+#	modified:   .vscode/settings.json
+#	modified:   target/test-classes/com/example/demo/DemoApplicationTests.class
+#
 package com.example.demo;
 
 import org.junit.jupiter.api.Test;
