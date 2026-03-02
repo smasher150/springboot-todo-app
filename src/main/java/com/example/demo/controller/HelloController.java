@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.example.demo.model.Task;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,13 +12,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.example.demo.model.Task;
+
 @Controller
 
 public class HelloController {
 
     // simple in-memory task store with ID generation
-    private List<Task> tasks = new ArrayList<>();
-    private AtomicLong idCounter = new AtomicLong(1);
+    private final List<Task> tasks = new ArrayList<>();
+    private final AtomicLong idCounter = new AtomicLong(1);
 
     @GetMapping("/")
     public String home(Model model) {
