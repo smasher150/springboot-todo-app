@@ -131,6 +131,15 @@ button:hover {
     padding: 20px;
 }
 
+.task-counts {
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #333;
+}
+.task-counts span {
+    margin-right: 10px;
+}
+
 .inline-form {
     display: inline;
 }

@@ -22,9 +22,16 @@ public class HelloController {
     private final List<Task> tasks = new ArrayList<>();
     private final AtomicLong idCounter = new AtomicLong(1);
 
+    // helper method to update model attributes used by home
+    private void updateModel(Model model) {
+        model.addAttribute("tasks", tasks);
+        model.addAttribute("totalCount", tasks.size());
+        model.addAttribute("completedCount", tasks.stream().filter(Task::isCompleted).count());
+    }
+
     @GetMapping("/")
     public String home(Model model) {
-        model.addAttribute("tasks", tasks);
+        updateModel(model);
         return "home";   
     }
 
@@ -50,7 +57,7 @@ public class HelloController {
         
         Task newTask = new Task(idCounter.getAndIncrement(), description, false, parsedDueDate);
         tasks.add(newTask);
-        model.addAttribute("tasks", tasks);
+        updateModel(model);
         model.addAttribute("message", "Task added: " + description);
         return "home";
     }
@@ -71,7 +78,7 @@ public class HelloController {
                 break;
             }
         }
-        model.addAttribute("tasks", tasks);
+        updateModel(model);
         return "home";
     }
     
@@ -79,7 +86,7 @@ public class HelloController {
     @PostMapping("/deleteTask")
     public String deleteTask(@RequestParam("id") Long id, Model model) {
         tasks.removeIf(task -> task.getId().equals(id));
-        model.addAttribute("tasks", tasks);
+        updateModel(model);
         model.addAttribute("message", "Task deleted successfully");
         return "home";
     }
@@ -96,7 +103,7 @@ public class HelloController {
                     LocalDate parsedDueDate = LocalDate.parse(dueDate);
                     // Validate that due date is not in the past
                     if (parsedDueDate.isBefore(LocalDate.now())) {
-                        model.addAttribute("tasks", tasks);
+                        updateModel(model);
                         model.addAttribute("message", "Error: Due date cannot be in the past!");
                         return "home";
                     }
@@ -106,7 +113,23 @@ public class HelloController {
                 break;
             }
         }
-        model.addAttribute("tasks", tasks);
+        updateModel(model);
         return "home";
+    }
+
+    // remove all completed tasks
+    @PostMapping("/clearCompleted")
+    public String clearCompleted(Model model) {
+        tasks.removeIf(Task::isCompleted);
+        updateModel(model);
+        model.addAttribute("message", "Completed tasks cleared");
+        return "home";
+    }
+
+    // simple JSON API to fetch all tasks
+    @GetMapping("/api/tasks")
+    @ResponseBody
+    public List<Task> getTasks() {
+        return tasks;
     }
 }
