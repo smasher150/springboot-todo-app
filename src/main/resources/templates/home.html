@@ -55,11 +55,36 @@
         </form>
     </div>
 
-    <!-- Add Task Form -->
+    <!-- Add Task Form with Enhanced Features -->
     <form action="/addTask" method="post" class="add-task-form">
-        <input type="text" name="task" placeholder="Enter task description" required />
-        <input type="date" name="dueDate" th:min="${T(java.time.LocalDate).now()}" />
-        <button type="submit">Add Task</button>
+        <div class="form-row">
+            <input type="text" name="task" placeholder="Enter task description" required class="task-input" />
+            <input type="date" name="dueDate" th:min="${T(java.time.LocalDate).now()}" class="date-input" />
+        </div>
+        <div class="form-row">
+            <select name="priority" class="priority-select">
+                <option value="MEDIUM">🟡 Medium Priority</option>
+                <option value="HIGH">🔴 High Priority</option>
+                <option value="LOW">🟢 Low Priority</option>
+            </select>
+            <input type="text" name="category" placeholder="Category" class="category-input" />
+            <input type="text" name="tags" placeholder="Tags (comma separated)" class="tags-input" />
+        </div>
+        <div class="form-row">
+            <select name="recurringPattern" class="recurring-select">
+                <option value="">No Recurrence</option>
+                <option value="DAILY">📅 Daily</option>
+                <option value="WEEKLY">📆 Weekly</option>
+                <option value="MONTHLY">🗓️ Monthly</option>
+            </select>
+            <input type="number" name="estimatedMinutes" placeholder="Est. minutes" min="1" value="25" class="minutes-input" />
+            <input type="checkbox" name="isMilestone" id="milestone-checkbox" class="milestone-checkbox" />
+            <label for="milestone-checkbox" class="milestone-label">🎯 Milestone</label>
+        </div>
+        <div class="form-row">
+            <textarea name="notes" placeholder="Notes (optional)" class="notes-textarea" rows="2"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">➕ Add Task</button>
     </form>
 
     <!-- Bulk Operations -->
@@ -82,47 +107,140 @@
          th:class="|message ${#strings.contains(message, 'Error:') ? 'message-error' : (#strings.contains(message, 'deleted') ? 'message-success' : 'message-info')}|"
          th:text="${message}"></div>
 
-    <!-- list of tasks -->
-    <div th:if="${tasks.empty}">
-        <p class="no-tasks">No tasks found. Add your first task above!</p>
+    <!-- Task Section Header -->
+    <div class="task-section-header">
+        <h3>📋 Your Tasks</h3>
+        <p th:if="${!tasks.empty}" th:text="'You have ' + ${tasks.size()} + ' task' + (${tasks.size()} == 1 ? '' : 's')"></p>
     </div>
 
-    <div th:each="task : ${tasks}">
-        <div class="task-item" th:classappend="${task.completed} ? 'completed-task' : ''">
-            <div class="task-info">
-                <div class="task-header">
-                    <span th:class="${task.completed} ? 'completed' : ''" th:text="${task.description}"></span>
-                    <span class="age-tag" th:text="${task.daysOld + 'd'}"></span>
-                </div>
-                <div class="task-meta">
-                    <div class="due-date">
-                        <span th:if="${task.dueDate}"
-                              th:class="${task.dueDate.isBefore(T(java.time.LocalDate).now()) and !task.completed} ? 'overdue' : ''"
-                              th:text="'Due: ' + ${task.dueDate}"></span>
+    <!-- Empty State -->
+    <div th:if="${tasks.empty}" class="empty-state-container">
+        <div class="empty-state-icon">📝</div>
+        <h3 class="empty-state-title">No tasks yet</h3>
+        <p class="empty-state-description">Start by adding your first task above!</p>
+    </div>
+
+    <!-- Task Grid Layout -->
+    <div th:if="${!tasks.empty}" class="task-section">
+        <div class="task-grid">
+            <div th:each="task : ${tasks}" class="task-card" th:classappend="${task.completed} ? 'completed-task' : ''">
+                <!-- Task Priority Indicator -->
+                <div class="priority-indicator" th:class="${task.completed} ? 'priority-completed' : 'priority-active'"></div>
+                
+                <!-- Task Header -->
+                <div class="card-header">
+                    <div class="task-title-section">
+                        <div class="task-title">
+                            <div class="priority-badge" th:class="'priority-' + ${task.priority}" th:text="${task.priority}"></div>
+                            <h3 th:class="${task.completed} ? 'completed' : ''" th:text="${task.description}"></h3>
+                            <div class="task-status-badge" th:class="${task.completed} ? 'status-completed' : 'status-pending'">
+                                <span th:text="${task.completed} ? '✓ Completed' : '⏳ Active'"></span>
+                            </div>
+                        </div>
+                        <div class="task-badges">
+                            <span class="age-badge" th:text="${task.daysOld + 'd old'}"></span>
+                            <span th:if="${task.dueDate}" 
+                                  th:class="|due-badge ${task.dueDate.isBefore(T(java.time.LocalDate).now()) and !task.completed} ? 'overdue-badge' : 'due-normal'|"
+                                  th:text="${#temporals.format(task.dueDate, 'MMM dd')}"></span>
+                            <span th:if="${task.isMilestone}" class="milestone-badge">🎯 Milestone</span>
+                            <span th:if="${task.recurringPattern}" class="recurring-badge" th:text="${task.recurringPattern}"></span>
+                        </div>
                     </div>
-                    <div class="created-date">
-                        <span th:text="'Created: ' + ${#temporals.format(task.createdAt, 'MMM dd, HH:mm')}"></span>
+                </div>
+                
+                <!-- Task Details -->
+                <div class="card-body">
+                    <div class="task-details">
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="icon-calendar"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Created</span>
+                                <span class="detail-value" th:text="${#temporals.format(task.createdAt, 'MMM dd, yyyy HH:mm')}"></span>
+                            </div>
+                        </div>
+                        <div th:if="${task.dueDate}" class="detail-item">
+                            <div class="detail-icon">
+                                <i class="icon-due"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Due Date</span>
+                                <span th:class="${task.dueDate.isBefore(T(java.time.LocalDate).now()) and !task.completed} ? 'detail-value overdue-text' : 'detail-value'"
+                                      th:text="${task.dueDate}"></span>
+                            </div>
+                        </div>
+                        <div th:if="${task.category}" class="detail-item">
+                            <div class="detail-icon">
+                                <i class="icon-category"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Category</span>
+                                <span class="detail-value" th:text="${task.category}"></span>
+                            </div>
+                        </div>
+                        <div th:if="${!task.tags.empty}" class="detail-item">
+                            <div class="detail-icon">
+                                <i class="icon-tags"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Tags</span>
+                                <div class="tags-container">
+                                    <span th:each="tag : ${task.tags}" class="tag" th:text="${tag}"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${task.estimatedMinutes}" class="detail-item">
+                            <div class="detail-icon">
+                                <i class="icon-timer"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Estimated</span>
+                                <span class="detail-value" th:text="${task.estimatedMinutes + ' min'}"></span>
+                            </div>
+                        </div>
+                        <div th:if="${!task.subtasks.empty}" class="detail-item">
+                            <div class="detail-icon">
+                                <i class="icon-subtasks"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Subtasks</span>
+                                <div class="subtask-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" th:style="'width: ' + ${task.subtaskProgress} + '%'"></div>
+                                    </div>
+                                    <span class="progress-text" th:text="${task.completedSubtasksCount} + '/' + ${task.totalSubtasksCount}"></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="task-actions">
-                <form th:action="@{/toggleTask}" method="post" class="inline-form">
-                    <input type="hidden" name="id" th:value="${task.id}" />
-                    <button type="submit" class="btn btn-complete" th:text="${task.completed} ? 'Undo' : 'Complete'"></button>
-                </form>
-                <button class="btn btn-edit" th:onclick="|toggleEdit(${task.id})|">Edit</button>
-                <form th:action="@{/duplicateTask}" method="post" class="inline-form">
-                    <input type="hidden" name="id" th:value="${task.id}" />
-                    <button type="submit" class="btn btn-save">Duplicate</button>
-                </form>
-                <form th:action="@{/deleteTask}" method="post" class="inline-form">
-                    <input type="hidden" name="id" th:value="${task.id}" />
-                    <button type="submit" class="btn btn-delete">Delete</button>
-                </form>
+                
+                <!-- Action Buttons -->
+                <div class="card-footer">
+                    <div class="action-buttons">
+                        <form th:action="@{/toggleTask}" method="post" class="action-form">
+                            <input type="hidden" name="id" th:value="${task.id}" />
+                            <button type="submit" class="btn btn-complete" th:text="${task.completed} ? '↺ Undo' : '✓ Complete'"></button>
+                        </form>
+                        <button class="btn btn-edit" th:onclick="|toggleEdit(${task.id})|">✏️ Edit</button>
+                        <button class="btn btn-pomodoro" th:onclick="|startPomodoro(${task.id}, ${task.estimatedMinutes})|">🍅 Pomodoro</button>
+                        <form th:action="@{/duplicateTask}" method="post" class="action-form">
+                            <input type="hidden" name="id" th:value="${task.id}" />
+                            <button type="submit" class="btn btn-save">📋 Duplicate</button>
+                        </form>
+                        <form th:action="@{/deleteTask}" method="post" class="action-form">
+                            <input type="hidden" name="id" th:value="${task.id}" />
+                            <button type="submit" class="btn btn-delete">🗑️ Delete</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <!-- Edit Form (hidden by default) -->
+    </div>
+
+    <!-- Edit Form (hidden by default) -->
+    <div th:each="task : ${tasks}">
         <div th:id="'edit-' + ${task.id}" class="edit-form">
             <form th:action="@{/editTask}" method="post">
                 <input type="hidden" name="id" th:value="${task.id}" />
@@ -134,12 +252,165 @@
         </div>
     </div>
 
+    <!-- Pomodoro Timer Modal -->
+    <div id="pomodoroModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🍅 Pomodoro Timer</h3>
+                <span class="close" onclick="closePomodoro()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="timer-display">
+                    <span id="timerMinutes">25</span>:<span id="timerSeconds">00</span>
+                </div>
+                <div class="timer-task" id="timerTask">Task Name</div>
+                <div class="timer-controls">
+                    <button id="startBtn" onclick="startTimer()" class="btn btn-primary">▶️ Start</button>
+                    <button id="pauseBtn" onclick="pauseTimer()" class="btn btn-warning" style="display:none;">⏸️ Pause</button>
+                    <button id="resetBtn" onclick="resetTimer()" class="btn btn-secondary">🔄 Reset</button>
+                </div>
+                <div class="timer-progress">
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+    let timerInterval;
+    let totalSeconds = 25 * 60;
+    let currentSeconds = totalSeconds;
+    let isPaused = false;
+    let currentTaskId = null;
+
     function toggleEdit(taskId) {
         const editForm = document.getElementById('edit-' + taskId);
         editForm.style.display = editForm.style.display === 'none' ? 'block' : 'none';
     }
+
+    function startPomodoro(taskId, minutes) {
+        currentTaskId = taskId;
+        totalSeconds = minutes * 60;
+        currentSeconds = totalSeconds;
+        
+        // Find task name
+        const taskElement = document.querySelector(`[onclick="startPomodoro(${taskId}, ${minutes})"]`);
+        const taskCard = taskElement.closest('.task-card');
+        const taskName = taskCard.querySelector('h3').textContent;
+        
+        document.getElementById('timerTask').textContent = taskName;
+        updateTimerDisplay();
+        document.getElementById('pomodoroModal').style.display = 'block';
+    }
+
+    function closePomodoro() {
+        clearInterval(timerInterval);
+        document.getElementById('pomodoroModal').style.display = 'none';
+        resetTimer();
+    }
+
+    function startTimer() {
+        if (!isPaused) {
+            isPaused = false;
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+        }
+        
+        timerInterval = setInterval(() => {
+            if (currentSeconds > 0) {
+                currentSeconds--;
+                updateTimerDisplay();
+                updateProgressBar();
+            } else {
+                // Timer completed
+                clearInterval(timerInterval);
+                playNotificationSound();
+                showCompletionMessage();
+                resetTimer();
+            }
+        }, 1000);
+    }
+
+    function pauseTimer() {
+        clearInterval(timerInterval);
+        isPaused = true;
+        document.getElementById('pauseBtn').style.display = 'none';
+        document.getElementById('startBtn').style.display = 'inline-block';
+        document.getElementById('startBtn').textContent = '▶️ Resume';
+    }
+
+    function resetTimer() {
+        clearInterval(timerInterval);
+        currentSeconds = totalSeconds;
+        isPaused = false;
+        updateTimerDisplay();
+        updateProgressBar();
+        document.getElementById('startBtn').style.display = 'inline-block';
+        document.getElementById('pauseBtn').style.display = 'none';
+        document.getElementById('startBtn').textContent = '▶️ Start';
+    }
+
+    function updateTimerDisplay() {
+        const minutes = Math.floor(currentSeconds / 60);
+        const seconds = currentSeconds % 60;
+        document.getElementById('timerMinutes').textContent = minutes.toString().padStart(2, '0');
+        document.getElementById('timerSeconds').textContent = seconds.toString().padStart(2, '0');
+    }
+
+    function updateProgressBar() {
+        const progress = ((totalSeconds - currentSeconds) / totalSeconds) * 100;
+        document.getElementById('progressFill').style.width = progress + '%';
+    }
+
+    function playNotificationSound() {
+        // Create a simple beep sound
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+    }
+
+    function showCompletionMessage() {
+        const message = document.createElement('div');
+        message.className = 'pomodoro-complete-message';
+        message.innerHTML = `
+            <div class="message-content">
+                <h3>🎉 Pomodoro Complete!</h3>
+                <p>Great job! Time for a short break.</p>
+                <button onclick="this.parentElement.parentElement.remove()" class="btn btn-primary">Got it!</button>
+            </div>
+        `;
+        document.body.appendChild(message);
+        
+        setTimeout(() => {
+            if (message.parentElement) {
+                message.remove();
+            }
+        }, 10000);
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('pomodoroModal');
+        if (event.target === modal) {
+            closePomodoro();
+        }
+    }
     </script>
+
 </div>
 
 </body>
