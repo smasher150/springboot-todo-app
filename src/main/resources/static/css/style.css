@@ -149,3 +149,45 @@ button:hover {
     width: 300px;
     margin-right: 8px;
 }
+
+/* Forms */
+.add-task-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+input[type="text"], input[type="date"], select {
+    padding: 8px;
+    margin-right: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+input[type="text"] {
+    width: 300px;
+}
+
+input[type="date"] {
+    width: 150px;
+}
+
+select {
+    width: 120px;
+}
+
+/* Task Header, Meta, and Form Layouts */
+.task-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.task-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: #666;
+}
