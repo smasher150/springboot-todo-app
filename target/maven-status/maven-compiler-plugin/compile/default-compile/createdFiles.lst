@@ -1,3 +1,5 @@
 com\example\demo\controller\HelloController.class
 com\example\demo\DemoApplication.class
+com\example\demo\model\TaskHistory.class
+com\example\demo\model\TaskTemplate.class
 com\example\demo\model\Task.class

@@ -11,8 +11,6 @@ A modern, feature-rich todo list application built with Spring Boot 3.2.0 and Ja
 - **Complete/Incomplete** - Toggle task status with visual feedback
 - **Due Date Management** - Date picker with past date validation
 - **Overdue Detection** - Automatic highlighting of overdue incomplete tasks
-- **Task Counts** - Display total and completed task counts
-- **Clear Completed** - One‑click removal of all completed tasks
 
 ### Technical Features
 - **Modern UI** - Clean, responsive design with color-coded messages
@@ -88,7 +86,6 @@ The application will start on `http://localhost:8080`
 | POST | `/toggleTask` | Toggle task completion status |
 | POST | `/deleteTask` | Delete task |
 | GET | `/api/status` | Application health check |
-| GET | `/api/tasks` | Retrieve list of all tasks in JSON |
 
 ## UI Features
 
@@ -132,8 +129,6 @@ mvn clean test jacoco:report
 ## Future Enhancements
 
 - [ ] Database persistence (H2/PostgreSQL)
-- [x] Basic REST API for listing tasks
-- [x] Clear-completed button and task counting
 - [ ] User authentication and authorization
 - [ ] Task categories and tags
 - [ ] Search and filter functionality
@@ -156,6 +151,6 @@ This project is open source and available under the MIT License.
 
 ## Author
 
-**Built with ❤️ using Spring Boot**
+
 
 *Demo application showcasing modern web development practices and clean code architecture.*
