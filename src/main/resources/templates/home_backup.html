@@ -70,6 +70,20 @@
             <input type="text" name="category" placeholder="Category" class="category-input" />
             <input type="text" name="tags" placeholder="Tags (comma separated)" class="tags-input" />
         </div>
+        <div class="form-row">
+            <select name="recurringPattern" class="recurring-select">
+                <option value="">No Recurrence</option>
+                <option value="DAILY">📅 Daily</option>
+                <option value="WEEKLY">📆 Weekly</option>
+                <option value="MONTHLY">🗓️ Monthly</option>
+            </select>
+            <input type="number" name="estimatedMinutes" placeholder="Est. minutes" min="1" value="25" class="minutes-input" />
+            <input type="checkbox" name="isMilestone" id="milestone-checkbox" class="milestone-checkbox" />
+            <label for="milestone-checkbox" class="milestone-label">🎯 Milestone</label>
+        </div>
+        <div class="form-row">
+            <textarea name="notes" placeholder="Notes (optional)" class="notes-textarea" rows="2"></textarea>
+        </div>
         <button type="submit" class="btn btn-primary">➕ Add Task</button>
     </form>
 
