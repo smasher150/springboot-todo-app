@@ -9,7 +9,7 @@
 <div class="container">
     <h2>Todo List Manager</h2>
 
-    <!-- Statistics Dashboard -->
+    <!-- Enhanced Statistics Dashboard -->
     <div class="stats-dashboard">
         <div class="stat-item">
             <span class="stat-label">Total:</span>
@@ -27,6 +27,24 @@
             <span class="stat-label">Reminders:</span>
             <span class="stat-value" th:text="${reminderCount}">0</span>
         </div>
+        <div class="stat-item">
+            <span class="stat-label">Today:</span>
+            <span class="stat-value" th:text="${todayCount != null ? todayCount : '0'}">0</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Overdue:</span>
+            <span class="stat-value" th:text="${overdueCount != null ? overdueCount : '0'}" style="color: #dc3545;">0</span>
+        </div>
+    </div>
+
+    <!-- Quick Actions Toolbar -->
+    <div class="quick-actions-toolbar">
+        <button onclick="markAllComplete()" class="btn btn-secondary">✅ Complete All</button>
+        <button onclick="clearAllTasks()" class="btn btn-clear">🗑️ Clear All</button>
+        <button onclick="sortTasksByPriority()" class="btn btn-edit">🔥 Sort by Priority</button>
+        <button onclick="toggleDarkMode()" class="btn btn-save">🌙 Dark Mode</button>
+        <button onclick="showTemplates()" class="btn btn-complete">📋 Templates</button>
+        <button onclick="showShortcuts()" class="btn btn-primary">⌨️ Shortcuts</button>
     </div>
 
     <!-- Filter and Search Section -->
@@ -108,7 +126,8 @@
     <!-- Task Grid Layout -->
     <div th:if="${!tasks.empty}" class="task-section">
         <div class="task-grid">
-            <div th:each="task : ${tasks}" class="task-card" th:classappend="${task.completed} ? 'completed-task' : ''">
+            <div th:each="task : ${tasks}" class="task-card" th:classappend="${task.completed} ? 'completed-task' : ''" 
+                 th:data-task-id="${task.id}" draggable="true" ondragstart="drag(event)" ondragover="allowDrop(event)" ondrop="drop(event)">
                 <!-- Task Priority Indicator -->
                 <div class="priority-indicator" th:class="${task.completed} ? 'priority-completed' : 'priority-active'"></div>
                 
@@ -201,6 +220,67 @@
                     </div>
                 </div>
                         
+                <!-- Task Comments/Notes Section -->
+                <div th:if="${task.comments}" class="task-comments">
+                    <div class="comments-header">
+                        <i class="icon-comments"></i>
+                        <span>Comments & Notes</span>
+                    </div>
+                    <div class="comments-list">
+                        <div th:each="comment : ${task.comments}" class="comment-item">
+                            <div class="comment-content" th:text="${comment.content}"></div>
+                            <div class="comment-meta">
+                                <span class="comment-time" th:text="${#temporals.format(comment.createdAt, 'MMM dd, HH:mm')}"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="add-comment">
+                        <input type="text" th:id="'comment-' + ${task.id}" placeholder="Add a comment or note..." class="comment-input" />
+                        <button th:onclick="|addComment(${task.id})|" class="btn btn-small btn-primary">Add</button>
+                    </div>
+                </div>
+                
+                <!-- Task Time Tracking -->
+                <div class="task-time-tracking">
+                    <div class="time-tracking-header">
+                        <i class="icon-clock"></i>
+                        <span>Time Tracking</span>
+                    </div>
+                    <div class="time-info">
+                        <div class="time-item">
+                            <span class="time-label">Tracked:</span>
+                            <span class="time-value" th:text="${task.totalTimeTracked != null ? task.totalTimeTracked + ' min' : '0 min'}">0 min</span>
+                        </div>
+                        <div class="time-item">
+                            <span class="time-label">Sessions:</span>
+                            <span class="time-value" th:text="${task.timeSessions != null ? task.timeSessions : '0'}">0</span>
+                        </div>
+                    </div>
+                    <div class="time-controls">
+                        <button th:onclick="|startTimer(${task.id})|" class="btn btn-small btn-timer">▶️ Start</button>
+                        <button th:onclick="|stopTimer(${task.id})|" class="btn btn-small btn-secondary">⏸️ Stop</button>
+                    </div>
+                </div>
+                
+                <!-- Task Attachments -->
+                <div th:if="${task.attachments}" class="task-attachments">
+                    <div class="attachments-header">
+                        <i class="icon-attachment"></i>
+                        <span>Attachments</span>
+                    </div>
+                    <div class="attachments-list">
+                        <div th:each="attachment : ${task.attachments}" class="attachment-item">
+                            <i class="icon-file"></i>
+                            <span th:text="${attachment.fileName}">file.pdf</span>
+                            <a th:href="@{/downloadAttachment(id=${attachment.id})}" class="download-btn">⬇️</a>
+                        </div>
+                    </div>
+                    <div class="add-attachment">
+                        <input type="file" th:id="'file-' + ${task.id}" class="file-input" />
+                        <button th:onclick="|uploadFile(${task.id})|" class="btn btn-small btn-save">📎 Upload</button>
+                    </div>
+                </div>
+                
                 <!-- Action Buttons -->
                 <div class="card-footer">
                     <div class="action-buttons">
@@ -234,6 +314,90 @@
                 <button type="submit" class="btn btn-save">Save</button>
                 <button type="button" class="btn btn-cancel" th:onclick="|toggleEdit(${task.id})|">Cancel</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Keyboard Shortcuts Help Modal -->
+    <div id="shortcutsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⌨️ Keyboard Shortcuts</h3>
+                <span class="close" onclick="closeShortcuts()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="shortcuts-grid">
+                    <div class="shortcut-item">
+                        <kbd>Ctrl + N</kbd>
+                        <span>New Task</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl + S</kbd>
+                        <span>Save Task</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl + F</kbd>
+                        <span>Search</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl + D</kbd>
+                        <span>Toggle Dark Mode</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl + T</kbd>
+                        <span>Show Templates</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl + ?</kbd>
+                        <span>Show Shortcuts</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Escape</kbd>
+                        <span>Close Modals</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl + A</kbd>
+                        <span>Select All Tasks</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Templates Modal -->
+    <div id="templatesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📋 Task Templates</h3>
+                <span class="close" onclick="closeTemplates()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="templates-grid">
+                    <div class="template-card" onclick="useTemplate('Daily Standup Meeting')">
+                        <h4>📅 Daily Standup</h4>
+                        <p>Quick daily team meeting</p>
+                    </div>
+                    <div class="template-card" onclick="useTemplate('Code Review')">
+                        <h4>🔍 Code Review</h4>
+                        <p>Review and test code changes</p>
+                    </div>
+                    <div class="template-card" onclick="useTemplate('Documentation')">
+                        <h4>📝 Documentation</h4>
+                        <p>Update project documentation</p>
+                    </div>
+                    <div class="template-card" onclick="useTemplate('Bug Fix')">
+                        <h4>🐛 Bug Fix</h4>
+                        <p>Fix reported issues</p>
+                    </div>
+                    <div class="template-card" onclick="useTemplate('Feature Development')">
+                        <h4>🚀 Feature Dev</h4>
+                        <p>Develop new features</p>
+                    </div>
+                    <div class="template-card" onclick="useTemplate('Testing')">
+                        <h4>🧪 Testing</h4>
+                        <p>Run tests and QA</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -387,11 +551,274 @@
         }, 10000);
     }
 
-    // Close modal when clicking outside
+    // Enhanced Quick Actions Functions
+    function markAllComplete() {
+        const checkboxes = document.querySelectorAll('form[action="/toggleTask"] input[type="hidden"]');
+        checkboxes.forEach(checkbox => {
+            const form = checkbox.parentElement;
+            form.submit();
+        });
+        setTimeout(() => location.reload(), 1000);
+    }
+
+    function clearAllTasks() {
+        if (confirm('Are you sure you want to clear all tasks? This cannot be undone.')) {
+            fetch('/clearAllTasks', { method: 'POST' })
+                .then(() => location.reload());
+        }
+    }
+
+    function sortTasksByPriority() {
+        const currentUrl = new URL(window.location);
+        currentUrl.searchParams.set('sortBy', 'priority');
+        currentUrl.searchParams.set('sortOrder', 'desc');
+        window.location.href = currentUrl.toString();
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+    }
+
+    function showTemplates() {
+        document.getElementById('templatesModal').style.display = 'block';
+    }
+
+    function closeTemplates() {
+        document.getElementById('templatesModal').style.display = 'none';
+    }
+
+    function useTemplate(templateName) {
+        const templates = {
+            'Daily Standup Meeting': 'Daily standup meeting with team sync and progress review',
+            'Code Review': 'Review code changes, run tests, and provide feedback',
+            'Documentation': 'Update technical documentation and API references',
+            'Bug Fix': 'Investigate and fix reported bugs and issues',
+            'Feature Development': 'Develop and implement new features',
+            'Testing': 'Run comprehensive tests and quality assurance'
+        };
+        
+        document.querySelector('input[name="task"]').value = templates[templateName];
+        closeTemplates();
+    }
+
+    // Enhanced Task Management Functions
+    function addComment(taskId) {
+        const commentInput = document.getElementById('comment-' + taskId);
+        const comment = commentInput.value.trim();
+        
+        if (comment) {
+            fetch('/addComment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ taskId: taskId, comment: comment })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+    }
+
+    // Time Tracking Functions
+    let activeTimers = {};
+    
+    function startTimer(taskId) {
+        if (activeTimers[taskId]) return;
+        
+        activeTimers[taskId] = {
+            startTime: Date.now(),
+            interval: setInterval(() => {
+                updateTimerDisplay(taskId);
+            }, 1000)
+        };
+        
+        // Update button states
+        const startBtn = document.querySelector(`button[onclick="startTimer(${taskId})"]`);
+        const stopBtn = document.querySelector(`button[onclick="stopTimer(${taskId})"]`);
+        if (startBtn) startBtn.style.display = 'none';
+        if (stopBtn) stopBtn.style.display = 'inline-block';
+    }
+    
+    function stopTimer(taskId) {
+        if (!activeTimers[taskId]) return;
+        
+        const timer = activeTimers[taskId];
+        clearInterval(timer.interval);
+        
+        const duration = Math.floor((Date.now() - timer.startTime) / 1000 / 60); // minutes
+        
+        fetch('/trackTime', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ taskId: taskId, duration: duration })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                delete activeTimers[taskId];
+                location.reload();
+            }
+        });
+    }
+    
+    function updateTimerDisplay(taskId) {
+        const timer = activeTimers[taskId];
+        if (!timer) return;
+        
+        const elapsed = Math.floor((Date.now() - timer.startTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        
+        // Update display if exists
+        const display = document.getElementById(`timer-display-${taskId}`);
+        if (display) {
+            display.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+    }
+    
+    // File Upload Functions
+    function uploadFile(taskId) {
+        const fileInput = document.getElementById('file-' + taskId);
+        const file = fileInput.files[0];
+        
+        if (file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('taskId', taskId);
+            
+            fetch('/uploadAttachment', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+    }
+    
+    // Keyboard Shortcuts Functions
+    function showShortcuts() {
+        document.getElementById('shortcutsModal').style.display = 'block';
+    }
+    
+    function closeShortcuts() {
+        document.getElementById('shortcutsModal').style.display = 'none';
+    }
+    
+    // Keyboard Event Listener
+    document.addEventListener('keydown', function(event) {
+        // Ctrl combinations
+        if (event.ctrlKey) {
+            switch(event.key) {
+                case 'n':
+                    event.preventDefault();
+                    document.querySelector('input[name="task"]').focus();
+                    break;
+                case 's':
+                    event.preventDefault();
+                    document.querySelector('.add-task-form').submit();
+                    break;
+                case 'f':
+                    event.preventDefault();
+                    document.querySelector('input[name="search"]').focus();
+                    break;
+                case 'd':
+                    event.preventDefault();
+                    toggleDarkMode();
+                    break;
+                case 't':
+                    event.preventDefault();
+                    showTemplates();
+                    break;
+                case 'a':
+                    event.preventDefault();
+                    markAllComplete();
+                    break;
+                case '?':
+                    event.preventDefault();
+                    showShortcuts();
+                    break;
+            }
+        }
+        
+        // Escape key
+        if (event.key === 'Escape') {
+            closeAllModals();
+        }
+    });
+    
+    function closeAllModals() {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+        });
+    }
+    
+    // Drag and Drop Functions
+    let draggedElement = null;
+    
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+    
+    function drag(ev) {
+        draggedElement = ev.target;
+        ev.dataTransfer.effectAllowed = 'move';
+    }
+    
+    function drop(ev) {
+        ev.preventDefault();
+        if (draggedElement && ev.target.classList.contains('task-card')) {
+            const draggedId = draggedElement.getAttribute('data-task-id');
+            const targetId = ev.target.getAttribute('data-task-id');
+            
+            if (draggedId !== targetId) {
+                // Reorder tasks
+                fetch('/reorderTasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ draggedId: draggedId, targetId: targetId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Swap elements in DOM
+                        const parent = draggedElement.parentNode;
+                        const target = ev.target;
+                        const targetNext = target.nextSibling;
+                        
+                        parent.insertBefore(draggedElement, targetNext);
+                        parent.insertBefore(target, draggedElement);
+                    }
+                });
+            }
+        }
+    }
+
+    // Load dark mode preference
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+    }
+
+    // Close modals when clicking outside
     window.onclick = function(event) {
-        const modal = document.getElementById('pomodoroModal');
-        if (event.target === modal) {
+        const pomodoroModal = document.getElementById('pomodoroModal');
+        const templatesModal = document.getElementById('templatesModal');
+        const shortcutsModal = document.getElementById('shortcutsModal');
+        
+        if (event.target === pomodoroModal) {
             closePomodoro();
+        }
+        if (event.target === templatesModal) {
+            closeTemplates();
+        }
+        if (event.target === shortcutsModal) {
+            closeShortcuts();
         }
     }
     </script>
